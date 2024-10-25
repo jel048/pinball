@@ -2,6 +2,7 @@ import * as THREE from "three";
 import {addMeshToScene} from "./myThreeHelper.js";
 import {COLLISION_GROUP_HINGE_SPHERE, createAmmoRigidBody, phy} from "./myAmmoHelper.js";
 import {COLLISION_GROUP_BOX, COLLISION_GROUP_BUMPER, COLLISION_GROUP_PLANE, COLLISION_GROUP_SPHERE} from "./myAmmoHelper";
+import {ri, gameInfo} from "./script.js";
 
 export function createSphere(mass = 0.05, color=0x0eFF09, position={x:0, y:0, z:0}) {
 	const radius = 2*mass;
@@ -39,9 +40,31 @@ export function pushBall(mesh, velocity) {
 		return;
 
 	let relativeVector = new Ammo.btVector3(0, 0, 0);
-	let impulseVector = new Ammo.btVector3(velocity.x * 0.015, velocity.y * 0.015, velocity.z * 0.015);
+	let impulseVector = new Ammo.btVector3(velocity.x * 0.01, velocity.y * 0.01, velocity.z * 0.01);
 
 	const rigidBody = mesh.userData.physicsBody;
 	rigidBody.activate(true);
 	rigidBody.applyImpulse(impulseVector, relativeVector);
+}
+
+
+export function moveBall(){
+	let ball = ri.scene.getObjectByName('sphere')
+	if (ball) {
+		ball.geometry.dispose()
+		ball.material.dispose()
+		ri.scene.remove(ball)
+		createSphere(
+			.05,
+			0x0eFF09,
+			{x:1.5, y:0.2, z:2}
+		);
+	} else {
+		createSphere(
+			.05,
+			0x0eFF09,
+			{x:1.5, y:0.2, z:2}
+		);
+	}
+
 }

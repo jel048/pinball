@@ -10,6 +10,8 @@ import {addMeshToScene} from "./myThreeHelper.js";
 import {createFlipperArm} from "./armHingeConstraint.js";
 import { floor } from "three/webgpu";
 import { AmmoPhysics } from "three/examples/jsm/Addons.js";
+import { moveBall } from "./sphere.js";
+import { gameInfo } from "./script.js";
 
 /**
  * Oppretter hele spillet.
@@ -23,7 +25,7 @@ export function createPinballGame(textureObjects, angle) {
 	const position={x:0, y:0, z:0}
 	createBoard(textureObjects[0], position, angle);
 
-	let flipperSize = {width: 1.1, height: 0.1, depth:0.1}	;
+	let flipperSize = {width: 1.2, height: 0.1, depth:0.1}	;
 
 	//Flipper1:
 	let position1 = {x: -1.5, y: 0, z: 2.0};	//I forhold til at brettet står i posisjon 0,0,0
@@ -33,6 +35,67 @@ export function createPinballGame(textureObjects, angle) {
 	createFlipperArm( 1, 0x00FF00, position2, false, "right_hinge_arm", angle, flipperSize);
 
 	addBumpers(angle);
+
+	createGameBody(textureObjects[0], angle);
+	createContactPoints(angle)
+}
+
+
+
+function createContactPoints(angle){
+	const mass = 0;
+	const material = new THREE.MeshPhongMaterial({color: 0x770000});
+	let contactPointSize = {width: 0.3, height: 0.5, depth: 0.02};
+	let startContactPointSize = {width: 0.2, height: 0.4, depth: 0.02};
+
+	let gameOverPosition = {x: -0.2, y: -0.25, z: 3.65};
+	let startRampPosition = {x: 1.47, y: -0.25, z: 3.65};
+
+	//THREE
+	let gameOverGeometry = new THREE.BoxGeometry(contactPointSize.width, contactPointSize.height, contactPointSize.depth);
+	let startContactGeometry = new THREE.BoxGeometry(startContactPointSize.width, startContactPointSize.height, startContactPointSize.depth);
+
+	let meshGameOver = new THREE.Mesh(gameOverGeometry, material);
+	meshGameOver.position.set(gameOverPosition.x, gameOverPosition.y, gameOverPosition.z)
+	meshGameOver.rotation.x = angle;
+	meshGameOver.name = 'gameOverContact'
+
+	meshGameOver.collisionResponse = () => {
+		moveBall();
+	};
+
+	addMeshToScene(meshGameOver)
+
+	let meshStartRamp = new THREE.Mesh(startContactGeometry, material);
+	meshStartRamp.position.set(startRampPosition.x, startRampPosition.y, startRampPosition.z)
+	meshStartRamp.rotation.x = angle;
+	meshStartRamp.name = 'startRampContact'
+	meshStartRamp.collisionResponse = () => {
+		gameInfo.canShoot = true;
+	};
+	addMeshToScene(meshStartRamp)
+
+
+
+	//AMMO
+
+
+	let gameOverShape = new Ammo.btBoxShape(new Ammo.btVector3(contactPointSize.width/2, contactPointSize.height/2, contactPointSize.depth/2))
+	let startContactShape = new Ammo.btBoxShape(new Ammo.btVector3(startContactPointSize.width/2, startContactPointSize.height/2, startContactPointSize.depth/2))
+
+	let gameOverRigidBody = createAmmoRigidBody(gameOverShape, meshGameOver, 0.2, 0.9, gameOverPosition, mass);
+	meshGameOver.userData.physicsBody = gameOverRigidBody;
+	// Legger til physics world:
+	phy.ammoPhysicsWorld.addRigidBody(gameOverRigidBody, COLLISION_GROUP_PLANE, COLLISION_GROUP_SPHERE);
+	phy.rigidBodies.push(meshGameOver);
+	gameOverRigidBody.threeMesh = meshGameOver;
+
+	let startRampRigidBody = createAmmoRigidBody(startContactShape, meshStartRamp, 0.2, 0.9, startRampPosition, mass);
+	meshStartRamp.userData.physicsBody = startRampRigidBody;
+	// Legger til physics world:
+	phy.ammoPhysicsWorld.addRigidBody(startRampRigidBody, COLLISION_GROUP_PLANE, COLLISION_GROUP_SPHERE);
+	phy.rigidBodies.push(meshStartRamp);
+	startRampRigidBody.threeMesh = meshStartRamp;
 }
 
 /**
@@ -60,7 +123,7 @@ export function createBoard(textureObject, position, angle) {
 
 	let leader1Position = {x: 1.23, y: 0.15, z: -3.3};
 	let leader2Position = {x: -1.2, y: 0.15, z: -1.3};
-	let leader3Position = {x: 1, y: 0.15, z: -0.3};
+	let leader3Position = {x: 0.7, y: 0.15, z: -0.3};
 	let leader4Position = {x: -0.7, y: 0.15, z: -2.3};
 	let leader5Position = {x: 0, y: 0.15, z: 0};
 
@@ -381,7 +444,7 @@ function addBumper(angle, size, position, name, points) {
 	meshBumper.rotation.x = angle;
 	meshBumper.points = points;
 	meshBumper.collisionResponse = (mesh1) => {
-		//Oppdater en Poengvariabel her
+		gameInfo.points += points;
 		mesh1.material.color.setHex(Math.random() * 0xffffff)
 	}
 
@@ -391,12 +454,6 @@ function addBumper(angle, size, position, name, points) {
 	//AMMO
 
 	let bumperShape = new Ammo.btCylinderShape(new Ammo.btVector3(size.radiusTop, size.radiusBottom, size.height))
-	let transBumper = new Ammo.btTransform();
-	transBumper.setIdentity();
-	transBumper.setOrigin(new Ammo.btVector3(position.x, position.y, position.z))
-	let quaternion = meshBumper.quaternion;
-	transBumper.setRotation(new Ammo.btQuaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w))
-
 	let rigidBody = createAmmoRigidBody(bumperShape, meshBumper, 0.2, 0.9, position, mass);
 	meshBumper.userData.physicsBody = rigidBody;
 	// Legger til physics world:
@@ -406,3 +463,72 @@ function addBumper(angle, size, position, name, points) {
 	rigidBody.threeMesh = meshBumper;
 
 }
+
+
+
+function createGameBody(textureObject, angle){
+	let bodyMaterial = new THREE.MeshPhongMaterial({color: 0x990000});
+	let bodyShape = new THREE.Shape();
+	bodyShape.moveTo(0.0);
+	bodyShape.lineTo(7.5, 0);
+	bodyShape.lineTo(7.5, -1.575);
+	bodyShape.lineTo(0, -0.39);
+	bodyShape.lineTo(0,0);
+	let meshBody = new THREE.Mesh(new THREE.ExtrudeGeometry(bodyShape, {depth : 3.4, bevelEnabled :false}), bodyMaterial)
+	meshBody.rotation.y = Math.PI/2;
+	meshBody.rotateZ(angle)
+	meshBody.position.set(-1.7, -0.638, 3.7)
+
+
+
+	let backWallShape = new THREE.Shape();
+	backWallShape.moveTo(0.0);
+	backWallShape.lineTo(0, 5);
+	backWallShape.lineTo(0.35, 5);
+	backWallShape.lineTo(0.35, 2.25);
+	backWallShape.lineTo(0,0);
+	let meshBackWall = new THREE.Mesh(new THREE.ExtrudeGeometry(backWallShape, {depth : 3.4, bevelEnabled :false}), bodyMaterial)
+	meshBackWall.rotateY(-Math.PI/2)
+	meshBackWall.position.set(1.7, -1, -3.95)
+	
+
+
+
+
+	addMeshToScene(meshBody)
+	addMeshToScene(meshBackWall)
+
+
+
+
+
+
+
+
+
+
+	let legMaterial = new THREE.MeshPhongMaterial({color: 0x666666})
+
+	let leg1Pos = {x:-1.5, y: -1.77, z: 3.43}
+	createBodyLeg(leg1Pos, legMaterial)
+
+	let leg2Pos = {x:1.5, y: -1.77, z: 3.43}
+	createBodyLeg(leg2Pos, legMaterial)
+
+	let leg3Pos = {x:-1.5, y: -1.77, z: -3.75}
+	createBodyLeg(leg3Pos, legMaterial)
+
+	let leg4Pos = {x:1.5, y: -1.77, z: -3.75}
+	createBodyLeg(leg4Pos, legMaterial)
+
+
+}
+
+function createBodyLeg(position, material){
+	let legGeometry = new THREE.BoxGeometry(0.4, 1.5, 0.4);
+	let meshLeg = new THREE.Mesh(legGeometry, material)
+	meshLeg.position.set(position.x, position.y, position.z)
+
+	addMeshToScene(meshLeg)
+}
+

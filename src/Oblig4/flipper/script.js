@@ -15,6 +15,12 @@ export const ri = {
 	lilGui: undefined
 };
 
+export const gameInfo = {
+	points: 0,
+	ballNumber: 0,
+	canShoot: false,
+}
+
 export function main() {
 	//Input - standard Javascript / WebGL:
 	document.addEventListener('keyup', handleKeyUp, false);
@@ -69,6 +75,12 @@ function addAmmoSceneObjects() {
 	}
 }
 
+function updatePoints(){
+	document.getElementById('points').innerHTML = String(gameInfo.points)
+	document.getElementById('ball').innerHTML = String(gameInfo.ballNumber)
+}
+
+
 function addAmmoSceneObjectsContinued(textureObjects) {
 	//Spillbrettet må helle litt for å få ballen til å rulle:
 	let gameboardXrotationAngle = Math.PI/20;
@@ -90,6 +102,9 @@ function animate(currentTime, myThreeScene, myAmmoPhysicsWorld) {
 
 	//Sjekker input:
 	handleKeys(deltaTime);
+
+	//oppdater poeng
+	updatePoints();
 
 	//Tegner scenen med gitt kamera:
 	renderScene();

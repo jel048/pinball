@@ -140,6 +140,31 @@ function checkCollisions(deltaTime) {
 							if (typeof threeMesh1.collisionResponse === 'function')
 								threeMesh1.collisionResponse(threeMesh1, {x: velocity1.x(), y: velocity1.y(), z: velocity1.z()});
 						}
+						if (checkCollisionBetween('sphere', 'startRampContact', threeMesh0.name, threeMesh1.name)) {
+							// Skriver ut debuginfo:
+							writeDebugInfo(threeMesh0,threeMesh1,rbObject0,rbObject1,contactPoint,i,j,distance,velocity0,velocity1);
+
+							// Kaller ev. på collisionResponse-eventfunksjon dersom definert på meshene.
+							// Sender med objektets hastighet slik at man ev. kan gi dem et ekstra dytt (aktuelt for kuler).
+							if (typeof threeMesh0.collisionResponse === 'function')
+								threeMesh0.collisionResponse();
+							if (typeof threeMesh1.collisionResponse === 'function')
+								threeMesh1.collisionResponse();
+						}
+
+						if (checkCollisionBetween('sphere', 'gameOverContact', threeMesh0.name, threeMesh1.name)) {
+							// Skriver ut debuginfo:
+							writeDebugInfo(threeMesh0,threeMesh1,rbObject0,rbObject1,contactPoint,i,j,distance,velocity0,velocity1);
+
+							// Kaller ev. på collisionResponse-eventfunksjon dersom definert på meshene.
+							// Sender med objektets hastighet slik at man ev. kan gi dem et ekstra dytt (aktuelt for kuler).
+							if (typeof threeMesh0.collisionResponse === 'function')
+								threeMesh0.collisionResponse();
+							if (typeof threeMesh1.collisionResponse === 'function')
+								threeMesh1.collisionResponse();
+						}
+
+
 					}
 				}
 			}

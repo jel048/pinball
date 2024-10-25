@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import GUI from "lil-gui";
-import {createSphere, pushBall} from "./sphere.js";
+import {createSphere, moveBall, pushBall} from "./sphere.js";
 import {TrackballControls} from "three/examples/jsm/controls/TrackballControls.js";
 import {pushFlipper} from "./armHingeConstraint.js";
-import {ri} from "./script.js";
+import {ri, gameInfo} from "./script.js";
 
 export function createThreeScene() {
 	const canvas = document.createElement('canvas');
@@ -44,18 +44,21 @@ export function createThreeScene() {
 	// Knapper:
 	const btnNewGame = document.getElementById("btnNewGame");
 	btnNewGame.addEventListener("click", (event) => {
-		createSphere(
-			.05,
-			0x0eFF09,
-			{x:1.5, y:0.2, z:2}
-		);
+		gameInfo.points = 0;
+		gameInfo.ballNumber = 0;
+		moveBall();
+		
 	});
 
 	const btnShoot = document.getElementById("btnShoot");
 	btnShoot.addEventListener("click", (event) => {
-		let sphere = ri.scene.getObjectByName("sphere");
-		let velocity = {x: 0, y: 10, z: -50}
-		pushBall(sphere,velocity)
+		if (gameInfo.canShoot){
+			let sphere = ri.scene.getObjectByName("sphere");
+			let velocity = {x: 0, y: 10, z: -50}
+			pushBall(sphere,velocity)
+			gameInfo.canShoot = false;
+		}
+		
 	});
 }
 
