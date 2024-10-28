@@ -18,7 +18,7 @@ export const ri = {
 export const gameInfo = {
 	points: 0,
 	ballNumber: 0,
-	canShoot: false,
+	canShoot: true,
 }
 
 export function main() {
@@ -78,7 +78,37 @@ function addAmmoSceneObjects() {
 function updatePoints(){
 	document.getElementById('points').innerHTML = String(gameInfo.points)
 	document.getElementById('ball').innerHTML = String(gameInfo.ballNumber)
+
+	let scoreList = [0, 0, 0, 0, 0, 0]
+	let scoreDigits = String(gameInfo.points).split('').map(Number);
+
+	scoreList.fill(0);
+    for (let i = 0; i < scoreDigits.length; i++) {
+        scoreList[scoreList.length - 1 - i] = scoreDigits[scoreDigits.length - 1 - i];
+    }
+	let mesh;
+
+	//flytter alle tallene tilbake til "usynlig", inni brettet
+	for (let i = 0; i < 6; i++){
+		for (let j = 0; j <= 9; j++){
+			mesh = ri.scene.getObjectByName('num' + String(i) + String(j))
+			mesh.position.z = -3.7
+
+		}
+	}
+
+	//flytter fram aktuelle tall
+	for (let i = 0; i < 6; i++){
+		mesh = ri.scene.getObjectByName('num' + String(i) + String(scoreList[i]))
+			mesh.position.z = -3.5
+	}
+
+
+
+
+
 }
+
 
 
 function addAmmoSceneObjectsContinued(textureObjects) {

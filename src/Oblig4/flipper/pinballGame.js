@@ -11,7 +11,7 @@ import {createFlipperArm} from "./armHingeConstraint.js";
 import { floor } from "three/webgpu";
 import { AmmoPhysics } from "three/examples/jsm/Addons.js";
 import { moveBall } from "./sphere.js";
-import { gameInfo } from "./script.js";
+import { gameInfo, ri } from "./script.js";
 
 /**
  * Oppretter hele spillet.
@@ -24,6 +24,7 @@ import { gameInfo } from "./script.js";
 export function createPinballGame(textureObjects, angle) {
 	const position={x:0, y:0, z:0}
 	createBoard(textureObjects[0], position, angle);
+	createContactPoints(angle)
 
 	let flipperSize = {width: 1.2, height: 0.1, depth:0.1}	;
 
@@ -37,7 +38,9 @@ export function createPinballGame(textureObjects, angle) {
 	addBumpers(angle);
 
 	createGameBody(textureObjects[0], angle);
-	createContactPoints(angle)
+
+	addScore()
+	
 }
 
 
@@ -45,26 +48,12 @@ export function createPinballGame(textureObjects, angle) {
 function createContactPoints(angle){
 	const mass = 0;
 	const material = new THREE.MeshPhongMaterial({color: 0x770000});
-	let contactPointSize = {width: 0.3, height: 0.5, depth: 0.02};
 	let startContactPointSize = {width: 0.2, height: 0.4, depth: 0.02};
-
-	let gameOverPosition = {x: -0.2, y: -0.25, z: 3.65};
 	let startRampPosition = {x: 1.47, y: -0.25, z: 3.65};
 
 	//THREE
-	let gameOverGeometry = new THREE.BoxGeometry(contactPointSize.width, contactPointSize.height, contactPointSize.depth);
+	
 	let startContactGeometry = new THREE.BoxGeometry(startContactPointSize.width, startContactPointSize.height, startContactPointSize.depth);
-
-	let meshGameOver = new THREE.Mesh(gameOverGeometry, material);
-	meshGameOver.position.set(gameOverPosition.x, gameOverPosition.y, gameOverPosition.z)
-	meshGameOver.rotation.x = angle;
-	meshGameOver.name = 'gameOverContact'
-
-	meshGameOver.collisionResponse = () => {
-		moveBall();
-	};
-
-	addMeshToScene(meshGameOver)
 
 	let meshStartRamp = new THREE.Mesh(startContactGeometry, material);
 	meshStartRamp.position.set(startRampPosition.x, startRampPosition.y, startRampPosition.z)
@@ -79,16 +68,9 @@ function createContactPoints(angle){
 
 	//AMMO
 
-
-	let gameOverShape = new Ammo.btBoxShape(new Ammo.btVector3(contactPointSize.width/2, contactPointSize.height/2, contactPointSize.depth/2))
 	let startContactShape = new Ammo.btBoxShape(new Ammo.btVector3(startContactPointSize.width/2, startContactPointSize.height/2, startContactPointSize.depth/2))
 
-	let gameOverRigidBody = createAmmoRigidBody(gameOverShape, meshGameOver, 0.2, 0.9, gameOverPosition, mass);
-	meshGameOver.userData.physicsBody = gameOverRigidBody;
-	// Legger til physics world:
-	phy.ammoPhysicsWorld.addRigidBody(gameOverRigidBody, COLLISION_GROUP_PLANE, COLLISION_GROUP_SPHERE);
-	phy.rigidBodies.push(meshGameOver);
-	gameOverRigidBody.threeMesh = meshGameOver;
+
 
 	let startRampRigidBody = createAmmoRigidBody(startContactShape, meshStartRamp, 0.2, 0.9, startRampPosition, mass);
 	meshStartRamp.userData.physicsBody = startRampRigidBody;
@@ -531,4 +513,254 @@ function createBodyLeg(position, material){
 
 	addMeshToScene(meshLeg)
 }
+
+
+
+
+function addScore(){
+	let Y = 2.5
+	let Z = -3.7;
+	let material = new THREE.MeshPhongMaterial({color: 0xffff00})
+
+	let onesPosition = {x: 1.25, y: Y, z:Z}
+	let tensPosition = {x: 0.75, y: Y, z:Z}
+	let hundredsPosition = {x: 0.25, y: Y, z:Z}
+	let thousandsPosition = {x: -0.25, y: Y, z:Z}
+	let tenthousandPosition = {x: -0.75, y: Y, z:Z}
+	let hundredthousandPosition = {x: -1.25, y: Y, z:Z}
+
+	let geometries = []
+	for (let k = 0; k<=9; k++){
+		let geometry = createNumberGeometry(k);
+		geometries.push(geometry)
+	}
+	
+	let positionList = [hundredthousandPosition, tenthousandPosition, thousandsPosition, hundredsPosition, tensPosition, onesPosition]
+	let num;
+	let mesh;
+
+	for (let i = 0; i < 6; i++){
+		for (let j = 0; j <= 9; j++){
+			num = geometries[j]
+			mesh  = new THREE.Mesh(num, material)
+			mesh.scale.set(0.2, 0.2, 0.2)
+			mesh.name = 'num' + String(i) + String(j)
+			mesh.position.set(positionList[i].x, positionList[i].y, positionList[i].z) 
+			ri.scene.add(mesh)
+
+		}
+	}
+
+
+
+}
+
+
+function createNumberGeometry(number) {
+    const shapes = {
+        0: createZeroShape(),
+        1: createOneShape(),
+        2: createTwoShape(),
+        3: createThreeShape(),
+        4: createFourShape(),
+        5: createFiveShape(),
+        6: createSixShape(),
+        7: createSevenShape(),
+        8: createEightShape(),
+        9: createNineShape()
+    };
+    const extrudeSettings = { depth: 0.2, bevelEnabled: false };
+    return new THREE.ExtrudeGeometry(shapes[number], extrudeSettings);
+}
+
+function createZeroShape() {
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.lineTo(1, 0);
+    shape.lineTo(1, 2);
+    shape.lineTo(0, 2);
+    shape.lineTo(0, 0);
+   
+	
+
+    let holePath = new THREE.Path();
+    holePath.moveTo(0.2, 0.2);
+    holePath.lineTo(0.8, 0.2);
+    holePath.lineTo(0.8, 1.8);
+    holePath.lineTo(0.2, 1.8);
+    holePath.lineTo(0.2, 0.2);
+
+    shape.holes.push(holePath);
+    return shape;
+}
+
+function createOneShape() {
+    const shape = new THREE.Shape();
+    shape.moveTo(0.5, 0);
+    shape.lineTo(1, 0);
+	shape.lineTo(1, 2);
+	shape.lineTo(0.5, 2);
+	shape.lineTo(0.5, 0);
+    return shape;
+}
+
+function createTwoShape() {
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.lineTo(1, 0);
+    shape.lineTo(1, 0.2);
+    shape.lineTo(0.2, 0.2);
+    shape.lineTo(0.2, 1);
+	shape.lineTo(1, 1);
+	shape.lineTo(1, 2);
+	shape.lineTo(0, 2);
+	shape.lineTo(0, 1.8);
+	shape.lineTo(0.8, 1.8);
+	shape.lineTo(0.8, 1.2);
+	shape.lineTo(0, 1.2);
+	shape.lineTo(0, 0);
+    return shape;
+}
+
+function createThreeShape() {
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.lineTo(1, 0);
+    shape.lineTo(1, 2);
+    shape.lineTo(0, 2);
+    shape.lineTo(0, 1.8);
+	shape.lineTo(0.8, 1.8);
+	shape.lineTo(0.8, 1.1);
+	shape.lineTo(0, 1.1);
+	shape.lineTo(0, 0.9);
+	shape.lineTo(0.8, 0.9);
+	shape.lineTo(0.8, 0.2);
+	shape.lineTo(0, 0.2);
+	shape.lineTo(0, 0);
+
+    return shape;
+}
+
+function createFourShape() {
+    const shape = new THREE.Shape();
+    shape.moveTo(0.6, 0);
+    shape.lineTo(1, 0);
+    shape.lineTo(1, 2);
+    shape.lineTo(0.6, 2);
+    shape.lineTo(0.6, 1.5);
+	shape.lineTo(0.4, 1.5);
+	shape.lineTo(0.4, 2);
+	shape.lineTo(0, 2);
+	shape.lineTo(0, 1.1);
+	shape.lineTo(0.6, 1.1);
+	shape.lineTo(0.6, 0);
+
+    return shape;
+}
+
+function createFiveShape() {
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.lineTo(1, 0);
+    shape.lineTo(1, 1.2);
+    shape.lineTo(0.2, 1.2);
+    shape.lineTo(0.2, 1.8);
+    shape.lineTo(1, 1.8);
+	shape.lineTo(1, 2);
+	shape.lineTo(0, 2);
+	shape.lineTo(0, 1);
+	shape.lineTo(0.8, 1);
+	shape.lineTo(0.8, 0.2);
+	shape.lineTo(0, 0.2);
+    return shape;
+}
+
+function createSixShape() {
+    const shape = new THREE.Shape();
+    shape.moveTo(1, 2);
+    shape.lineTo(0, 2);
+    shape.lineTo(0, 0);
+    shape.lineTo(1, 0);
+    shape.lineTo(1, 1);
+    shape.lineTo(0.2, 1);
+	shape.lineTo(0.2, 1.8);
+	shape.lineTo(1, 1.8);
+	shape.lineTo(1, 2);
+
+	let holePath = new THREE.Path();
+    holePath.moveTo(0.2, 0.2);
+    holePath.lineTo(0.8, 0.2);
+    holePath.lineTo(0.8, 0.8);
+    holePath.lineTo(0.2, 0.8);
+    holePath.lineTo(0.2, 0.2);
+
+    shape.holes.push(holePath);
+    return shape;
+}
+
+function createSevenShape() {
+    const shape = new THREE.Shape();
+    shape.moveTo(0.8, 0);
+    shape.lineTo(1,0);
+    shape.lineTo(1,2);
+	shape.lineTo(0,2);
+	shape.lineTo(0,1.8);
+	shape.lineTo(0.8, 1.8);
+	shape.lineTo(0.8, 0);
+	
+    return shape;
+}
+
+function createEightShape() {
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.lineTo(1, 0);
+    shape.lineTo(1, 2);
+    shape.lineTo(0, 2);
+    shape.lineTo(0, 0);
+
+    let holePath = new THREE.Path();
+    holePath.moveTo(0.2, 0.2);
+    holePath.lineTo(0.8, 0.2);
+    holePath.lineTo(0.8, 0.8);
+    holePath.lineTo(0.2, 0.8);
+    holePath.lineTo(0.2, 0.2);
+
+	shape.holes.push(holePath);
+
+	holePath = new THREE.Path();
+    holePath.moveTo(0.2, 1.2);
+    holePath.lineTo(0.8, 1.2);
+    holePath.lineTo(0.8, 1.8);
+    holePath.lineTo(0.2, 1.8);
+    holePath.lineTo(0.2, 1.2);
+
+    shape.holes.push(holePath);
+    return shape;
+}
+
+function createNineShape() {
+    const shape = new THREE.Shape();
+    shape.moveTo(0.8, 0);
+    shape.lineTo(1, 0);
+    shape.lineTo(1, 2);
+    shape.lineTo(0, 2);
+    shape.lineTo(0, 1);
+	shape.lineTo(0.8, 1);
+	shape.lineTo(0.8, 0);
+	
+
+	let holePath = new THREE.Path();
+    holePath.moveTo(0.2, 1.2);
+    holePath.lineTo(0.8, 1.2);
+    holePath.lineTo(0.8, 1.8);
+    holePath.lineTo(0.2, 1.8);
+    holePath.lineTo(0.2, 1.2);
+
+    shape.holes.push(holePath);
+    return shape;
+}
+
+
+
 

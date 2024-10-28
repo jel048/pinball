@@ -1,3 +1,5 @@
+import { gameInfo } from "./script";
+
 //Merk export: Denne brukes fler andre steder, f.eks. fra armHingeConstraints.js, pinballGame.js m.fl.
 export const phy = {
 	ammoPhysicsWorld: undefined,
@@ -131,7 +133,7 @@ function checkCollisions(deltaTime) {
 						// Kulene må ha navn 'sphere' og bumperne 'bumper' (eller i alle fall starter med 'sphere' og 'bumper'):
 						if (checkCollisionBetween('sphere', 'bumper', threeMesh0.name, threeMesh1.name)) {
 							// Skriver ut debuginfo:
-							writeDebugInfo(threeMesh0,threeMesh1,rbObject0,rbObject1,contactPoint,i,j,distance,velocity0,velocity1);
+							//writeDebugInfo(threeMesh0,threeMesh1,rbObject0,rbObject1,contactPoint,i,j,distance,velocity0,velocity1);
 
 							// Kaller ev. på collisionResponse-eventfunksjon dersom definert på meshene.
 							// Sender med objektets hastighet slik at man ev. kan gi dem et ekstra dytt (aktuelt for kuler).
@@ -140,30 +142,21 @@ function checkCollisions(deltaTime) {
 							if (typeof threeMesh1.collisionResponse === 'function')
 								threeMesh1.collisionResponse(threeMesh1, {x: velocity1.x(), y: velocity1.y(), z: velocity1.z()});
 						}
-						if (checkCollisionBetween('sphere', 'startRampContact', threeMesh0.name, threeMesh1.name)) {
-							// Skriver ut debuginfo:
-							writeDebugInfo(threeMesh0,threeMesh1,rbObject0,rbObject1,contactPoint,i,j,distance,velocity0,velocity1);
 
-							// Kaller ev. på collisionResponse-eventfunksjon dersom definert på meshene.
-							// Sender med objektets hastighet slik at man ev. kan gi dem et ekstra dytt (aktuelt for kuler).
-							if (typeof threeMesh0.collisionResponse === 'function')
-								threeMesh0.collisionResponse();
-							if (typeof threeMesh1.collisionResponse === 'function')
-								threeMesh1.collisionResponse();
+
+
+						if (gameInfo.canShoot == false){
+							if (checkCollisionBetween('sphere', 'startRampContact', threeMesh0.name, threeMesh1.name)) {
+								// Skriver ut debuginfo:
+								writeDebugInfo(threeMesh0,threeMesh1,rbObject0,rbObject1,contactPoint,i,j,distance,velocity0,velocity1);
+	
+								if (threeMesh0.name == 'startRampContact')
+									threeMesh0.collisionResponse();
+								if (threeMesh1.name == 'startRampContact')
+									threeMesh1.collisionResponse();
+							}
+	
 						}
-
-						if (checkCollisionBetween('sphere', 'gameOverContact', threeMesh0.name, threeMesh1.name)) {
-							// Skriver ut debuginfo:
-							writeDebugInfo(threeMesh0,threeMesh1,rbObject0,rbObject1,contactPoint,i,j,distance,velocity0,velocity1);
-
-							// Kaller ev. på collisionResponse-eventfunksjon dersom definert på meshene.
-							// Sender med objektets hastighet slik at man ev. kan gi dem et ekstra dytt (aktuelt for kuler).
-							if (typeof threeMesh0.collisionResponse === 'function')
-								threeMesh0.collisionResponse();
-							if (typeof threeMesh1.collisionResponse === 'function')
-								threeMesh1.collisionResponse();
-						}
-
 
 					}
 				}

@@ -50,11 +50,24 @@ export function createThreeScene() {
 		
 	});
 
+
+	const btnNextBall = document.getElementById("btnextball");
+	btnNextBall.addEventListener("click", (event) => {
+		if (gameInfo.ballNumber < 3){
+			gameInfo.ballNumber +=1 ;
+			moveBall();
+		}
+		
+		
+	});
+
+
 	const btnShoot = document.getElementById("btnShoot");
 	btnShoot.addEventListener("click", (event) => {
 		if (gameInfo.canShoot){
 			let sphere = ri.scene.getObjectByName("sphere");
 			let velocity = {x: 0, y: 10, z: -50}
+			gameInfo.canMoveBall = true;
 			pushBall(sphere,velocity)
 			gameInfo.canShoot = false;
 		}

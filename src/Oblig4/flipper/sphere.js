@@ -57,13 +57,13 @@ export function moveBall(){
 		createSphere(
 			.05,
 			0x0eFF09,
-			{x:1.5, y:0.2, z:2}
+			{x:1.5, y:0.05, z:3}
 		);
 	} else {
 		createSphere(
 			.05,
 			0x0eFF09,
-			{x:1.5, y:0.2, z:2}
+			{x:1.5, y:0.05, z:3}
 		);
 	}
 
