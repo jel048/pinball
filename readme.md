@@ -8,7 +8,7 @@ Some starter ammo.js code was provided by the teacher, Werner Farstad.
 ## Pinball
 
 ***
-<img width="400" height="400" src="static/screenshot.jpeg" alt="Flipper game" >
+<img width="800" height="600" src="static/screenshot.jpeg" alt="Flipper game" >
 ***
 
 
