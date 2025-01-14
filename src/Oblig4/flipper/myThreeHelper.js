@@ -21,9 +21,9 @@ export function createThreeScene() {
 	ri.scene = new THREE.Scene();
 	ri.scene.background = new THREE.Color( 0xdddddd );
 
-	// Koordinatakse-hjelper:
-	const axesHelper = new THREE.AxesHelper( 200 );
-	ri.scene.add( axesHelper );
+	//// Koordinatakse-hjelper:
+	//const axesHelper = new THREE.AxesHelper( 200 );
+	//ri.scene.add( axesHelper );
 
 	// lil-gui kontroller:
 	ri.lilGui = new GUI();
@@ -127,14 +127,6 @@ export function addLights() {
 
 //Sjekker tastaturet:
 export function handleKeys(delta) {
-	if (ri.currentlyPressedKeys['KeyH']) {
-		//createRandomSphere(200);
-		createSphere(
-			.05,
-			0x0eFF09,
-			{x:-.2, y:.1, z:.2}
-		);
-	}
 
 	const leftArmMesh = ri.scene.getObjectByName("left_hinge_arm");
 	let leftArmDirection = new THREE.Vector3();

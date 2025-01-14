@@ -92,9 +92,9 @@ function createArm(mass, position, name, angle, size) {
 	mesh.castShadow = true;
 	mesh.receiveShadow = true;
 	mesh.rotation.x = angle;
-	const direction = new THREE.Vector3();
-	mesh.getWorldDirection(direction);  // NB! WorldDirection gir en vektor som peker mot +Z. FRA DOC: Returns a vector representing the direction of object's positive z-axis in world space.
-	addArrowHelper(mesh, direction.normalize(), new THREE.Vector3( 0, 0, 0 ), 'worlddirection_arrow', 0xff0000, 0.5);
+	//const direction = new THREE.Vector3();
+	//mesh.getWorldDirection(direction);  // NB! WorldDirection gir en vektor som peker mot +Z. FRA DOC: Returns a vector representing the direction of object's positive z-axis in world space.
+	//addArrowHelper(mesh, direction.normalize(), new THREE.Vector3( 0, 0, 0 ), 'worlddirection_arrow', 0xff0000, 0.5);
 
 	//AMMO
 	const mesh_width = mesh.geometry.parameters.width;
